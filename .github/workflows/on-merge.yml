@@ -158,3 +158,17 @@ jobs:
           VERSION=$(echo "${BODY}" | jq -r '.version')
           echo "Submission created: ${SUBMISSION_ID} (v${VERSION})"
           echo "Build has been triggered."
+
+      - name: Clean up submission directory
+        if: steps.detect.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          APP_DIR="${{ steps.detect.outputs.app_dir }}"
+          echo "Removing ${APP_DIR}/ from submissions repo..."
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git rm -r "${APP_DIR}"
+          git commit -m "Clean up ${APP_DIR} after app repo created"
+          git push
